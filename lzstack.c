@@ -2,18 +2,12 @@
 
 // private interface
 static void *_lzstack_alloc_(size_t bytes, int dynamic, struct _lzstack_allocator_ *allocator);
-static void *_lzstack_realloc_(void *ptr, size_t bytes, struct _lzstack_allocator_ *allocator);
 static void _lzstack_dealloc_(void *ptr, int dynamic, struct _lzstack_allocator_ *allocator);
 
 // private implementation
 static void *_lzstack_alloc_(size_t bytes, int dynamic, struct _lzstack_allocator_ *allocator)
 {
     return allocator ? allocator->lzstack_alloc(bytes, dynamic) : malloc(bytes);
-}
-
-static void *_lzstack_realloc_(void *ptr, size_t bytes, struct _lzstack_allocator_ *allocator)
-{
-    return allocator ? allocator->lzstack_realloc(ptr, bytes) : realloc(ptr, bytes);
 }
 
 static void _lzstack_dealloc_(void *ptr, int dynamic, struct _lzstack_allocator_ *allocator)
@@ -89,6 +83,9 @@ int lzstack_push(void *value, struct _lzstack_ *stack, struct _lzstack_node_ **o
     node->previous = stack->nodes;
 
     stack->nodes = node;
+
+    if (out_node)
+        *out_node = node;
 
     return 0;
 }

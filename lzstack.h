@@ -6,7 +6,6 @@
 typedef struct _lzstack_allocator_
 {
     void *(*lzstack_alloc)(size_t byes, int dynamic);
-    void *(*lzstack_realloc)(void *ptr, size_t bytes);
     void (*lzstack_dealloc)(void *ptr, int dynamic);
 } LZStackAllocator;
 
