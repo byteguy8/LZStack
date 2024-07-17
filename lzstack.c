@@ -1,22 +1,22 @@
 #include "lzstack.h"
 
 // private interface
-static void *_lzstack_alloc_(size_t bytes, int dynamic, struct _lzstack_allocator_ *allocator);
-static void _lzstack_dealloc_(void *ptr, int dynamic, struct _lzstack_allocator_ *allocator);
+static void *_alloc_(size_t bytes, struct _lzstack_allocator_ *allocator);
+static void _dealloc_(void *ptr, struct _lzstack_allocator_ *allocator);
 
 // private implementation
-static void *_lzstack_alloc_(size_t bytes, int dynamic, struct _lzstack_allocator_ *allocator)
+static void *_alloc_(size_t bytes, struct _lzstack_allocator_ *allocator)
 {
-    return allocator ? allocator->lzstack_alloc(bytes, dynamic) : malloc(bytes);
+    return allocator ? allocator->alloc(bytes) : malloc(bytes);
 }
 
-static void _lzstack_dealloc_(void *ptr, int dynamic, struct _lzstack_allocator_ *allocator)
+static void _dealloc_(void *ptr, struct _lzstack_allocator_ *allocator)
 {
     if (!ptr)
         return;
 
     if (allocator)
-        allocator->lzstack_dealloc(ptr, dynamic);
+        allocator->dealloc(ptr);
     else
         free(ptr);
 }
@@ -24,7 +24,7 @@ static void _lzstack_dealloc_(void *ptr, int dynamic, struct _lzstack_allocator_
 // public implementation
 struct _lzstack_ *lzstack_create(struct _lzstack_allocator_ *allocator)
 {
-    struct _lzstack_ *stack = (struct _lzstack_ *)_lzstack_alloc_(sizeof(struct _lzstack_), 0, allocator);
+    struct _lzstack_ *stack = (struct _lzstack_ *)_alloc_(sizeof(struct _lzstack_), allocator);
 
     if (!stack)
         return NULL;
@@ -49,14 +49,14 @@ void lzstack_destroy(struct _lzstack_ *stack)
         node->value = NULL;
         node->previous = NULL;
 
-        _lzstack_dealloc_(node, 0, stack->allocator);
+        _dealloc_(node, stack->allocator);
 
         node = previous;
     }
 
     struct _lzstack_allocator_ *allocator = stack->allocator;
 
-    _lzstack_dealloc_(stack, 0, allocator);
+    _dealloc_(stack, allocator);
 }
 
 void *lzstack_peek(struct _lzstack_ *stack, struct _lzstack_node_ **out_node)
@@ -74,7 +74,7 @@ void *lzstack_peek(struct _lzstack_ *stack, struct _lzstack_node_ **out_node)
 
 int lzstack_push(void *value, struct _lzstack_ *stack, struct _lzstack_node_ **out_node)
 {
-    struct _lzstack_node_ *node = (struct _lzstack_node_ *)_lzstack_alloc_(sizeof(struct _lzstack_node_), 0, stack->allocator);
+    struct _lzstack_node_ *node = (struct _lzstack_node_ *)_alloc_(sizeof(struct _lzstack_node_), stack->allocator);
 
     if (!node)
         return 1;
@@ -104,7 +104,7 @@ void *lzstack_pop(struct _lzstack_ *stack)
     node->value = NULL;
     node->previous = NULL;
 
-    _lzstack_dealloc_(node, 0, stack->allocator);
+    _dealloc_(node, stack->allocator);
 
     return value;
 }
